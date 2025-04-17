@@ -1,0 +1,33 @@
+#include <bits/stdc++.h>
+using namespace std;
+#pragma GCC optimize("O3")
+ 
+size_t solve()
+{
+    size_t x, y;
+    cin >> x >> y;
+    if(x == y)return 1 + (x-1)*x;
+    else if(x > y)
+    {
+        if((x & 1) == 0)
+        {
+            return 1 + (x-1)*x + (x-y);
+        }else return 1 + (x-1)*x - (x-y);
+    }else if(x < y)
+    {
+        if((y & 1) == 0)
+        {
+            return 1 + (y-1)*y - (y-x);
+        }else return 1 + (y-1)*y + (y-x);
+    }
+}
+ 
+int main()
+{
+    size_t t;
+    cin >> t;
+    while(t--)
+    {
+        cout << solve() << '\n';
+    }
+}

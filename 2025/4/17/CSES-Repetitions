@@ -1,0 +1,24 @@
+#include <bits/stdc++.h>
+using namespace std;
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false);
+	cin.tie(0);
+	char c, pc = '\a';
+	size_t ans = 0, pans = 1;
+	while(cin >> c)
+	{
+		if(pc == c)
+		{
+			pans++;
+		}else
+		{
+			pc = c;
+			ans = max(pans, ans);
+			pans = 1;
+		}
+		
+	}
+	cout << max(pans, ans);
+}

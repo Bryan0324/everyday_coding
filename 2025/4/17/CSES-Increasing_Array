@@ -1,0 +1,16 @@
+#include <bits/stdc++.h>
+using namespace std;
+#pragma GCC optimize("O3")
+ 
+int main()
+{
+    size_t n;
+    cin >> n;
+    size_t pre = 0, x, ans = 0;
+    while(cin >> x)
+    {
+        if(pre > x)ans += pre-x;
+        else pre = x;
+    }
+    cout << ans;
+}

@@ -9,7 +9,8 @@ typedef pair<size_t, int> side;
 #define value first
 #define to second
 
-int main() {
+int main() 
+{
     int n; 
     cin >> n;
     vector<vector<side>> graph(n);

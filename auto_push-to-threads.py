@@ -5,7 +5,7 @@ import json
 commit_message = sys.argv[1]
 changed_files = sys.argv[2:]
 with open("secret.json", "r", encoding="utf-8") as file:
-    raw = json.loads(file)
+    raw = json.loads(file.read())
     threads = ThreadsAPI(
         user_id = raw["user_id"],
         access_token=raw["access_token"],

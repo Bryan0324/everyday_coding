@@ -7,10 +7,10 @@ import json
 
 def refresh_token():
     with open("secret.json", "r", encoding="utf-8") as file:
-        ori = file.read()
+        ori = json.loads(file.read())
         access_token = ori["access_token"]
     if not access_token:
-        raise ValueError("❌ THREADS_ACCESS_TOKEN 環境變數未設定")
+        raise ValueError("THREADS_ACCESS_TOKEN 環境變數未設定")
 
     url = "https://graph.threads.net/refresh_access_token"
     params = {
@@ -18,17 +18,17 @@ def refresh_token():
         "access_token": access_token,
     }
 
-    print("🔄 正在更新 Threads 長期存活 Token...")
+    print("正在更新 Threads 長期存活 Token...")
     resp = requests.get(url, params=params)
     data = resp.json()
 
     if "access_token" not in data:
-        raise RuntimeError(f"❌ 更新失敗: {data}")
+        raise RuntimeError(f"更新失敗: {data}")
 
     new_token = data["access_token"]
     expires_in = data.get("expires_in", 0)
 
-    print("✅ 更新成功")
+    print("更新成功")
     print(f"新的 Access Token: {new_token}")
     print(f"有效期: {expires_in // 86400} 天")
 

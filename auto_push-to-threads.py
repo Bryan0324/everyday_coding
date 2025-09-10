@@ -52,10 +52,16 @@ with open("secret.json", "r", encoding="utf-8") as file:
         app_secret=raw["app_secret"]
     )
 
+
+    
 # 組合發文內容
 text = "TOI初選錄取前每日一題競程"
 text += commit_message + "\n"
-text += "\n".join(changed_files)
+
+text += "\n\n" + "今日的程式碼：\n"
+
+for i in changed_files:
+    text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
 
 # 建立發文 Container
 media_json = threads.create_media_container(text=text)

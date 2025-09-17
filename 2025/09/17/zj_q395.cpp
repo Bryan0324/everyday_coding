@@ -7,7 +7,6 @@ using ll = long long;
 int main()
 {
     cin.tie(0)->sync_with_stdio(false);
-
     int n;
     cin >> n;
     vector<int> a(n), b(n);

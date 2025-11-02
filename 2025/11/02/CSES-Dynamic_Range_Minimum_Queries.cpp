@@ -2,7 +2,9 @@
 
 using namespace std;
 using ull = unsigned long long;
-
+/* 
+skw segtree
+*/
 struct segtree
 {
     int n, INIT = 1e9;

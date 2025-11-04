@@ -118,6 +118,7 @@ int main()
 /* 
 
 指標版線段樹 (TLE orz)
++動態開點
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -131,28 +132,14 @@ struct node
     {
         return max(a, b);
     }
-    node(vector<int>::iterator rl, vector<int>::iterator rr)
-    {
-        if(rl+1 == rr)
-        {
-            val = *rl;
-            return;
-        }
-        int mid = (rr-rl)/2;
-        l = new node(rl, rl+mid);
-        r = new node(rl+mid, rr);
-        val = combine(l->val, r->val);
-        return;
-    }
     void pushlazy()
     {
-        if(l != nullptr)
-        {
-            l->val += lazytag;
-            r->val += lazytag;
-            l->lazytag += lazytag;
-            r->lazytag += lazytag;
-        }
+        if(l == nullptr)l = new node();
+        if(r == nullptr)r = new node();
+        l->val += lazytag;
+        r->val += lazytag;
+        l->lazytag += lazytag;
+        r->lazytag += lazytag;
         lazytag = 0;
     }
     int query(int rl, int rr, int nl, int nr)
@@ -185,10 +172,10 @@ struct SegTree
 {
     node *root = nullptr;
     int size = 0;
-    SegTree(vector<int> &arr)
+    SegTree(int s)
     {
-        root = new node(arr.begin(), arr.end());
-        size = arr.size();
+        root = new node();
+        size = s;
     }
     int query(int l, int r)
     {
@@ -238,8 +225,7 @@ int main()
         i.second = cnt++;
     }
     
-    vector<int> e(cnt);
-    SegTree st(e);
+    SegTree st(cnt);
     int ans = 0;
     for(auto &i : shop)
     {

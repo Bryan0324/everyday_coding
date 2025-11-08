@@ -5,7 +5,16 @@ import json
 import requests
 import json
 def split_text(text, limit=490):  # 留一點 buffer
-    return [text[i:i+limit] for i in range(0, len(text), limit)]
+    _ret = text.split('\n')
+    ret = []
+    for line in _ret:
+        if len(line) > limit:
+            ret.extend([line[i:i+limit] for i in range(0, len(line), limit)])
+        elif len(ret) == 0 or len(ret[-1]) + len(line) + 1 > limit:
+            ret.append(line)
+        else:
+            ret[-1] += '\n' + line
+    return ret
 
 def refresh_token():
     with open("secret.json", "r", encoding="utf-8") as file:
@@ -74,7 +83,8 @@ for i, part in enumerate(parts):
     if i == 0:
         media_json = threads.create_media_container(text=part)
     else:
-        media_json = threads.create_media_container(text=part, reply_to_id=container_ids[-1])
+        media_json = threads.create_media_container(text=part)
+        media_json.update({"text_post_app_info": {"reply_id": container_ids[-1]}})
     container_ids.append(media_json.get("id"))
 
 # 發佈所有 container（會自動串成 thread）

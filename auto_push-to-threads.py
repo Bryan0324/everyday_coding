@@ -4,6 +4,21 @@ import json
 
 import requests
 import json
+
+def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
+    params = {
+            "text": text,
+            "access_token": token,
+            "media_type": media_type,  # TEXT, IMAGE, VIDEO
+        }
+    if reply_id:
+        params["reply_to_id"] = reply_id
+    resp = requests.post(
+            f"https://graph.threads.net/v1.0/{user_id}/threads",
+            params=params,
+        )
+    return
+
 def split_text(text, limit=490):  # 留一點 buffer
     _ret = text.split('\n')
     ret = []
@@ -83,6 +98,7 @@ for i, part in enumerate(parts):
     if i == 0:
         media_json = threads.create_media_container(text=part)
     else:
+
         media_json = threads.create_media_container(text=part)
         media_json.update({"text_post_app_info": {"reply_id": container_ids[-1]}})
     container_ids.append(media_json.get("id"))

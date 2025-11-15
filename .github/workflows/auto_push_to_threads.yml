@@ -1,0 +1,48 @@
+name: Auto Push to Threads
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          python -m pip install --upgrade pip
+          pip install requests threads-sdk
+
+      # Use Actions Secrets directly; do not write secret.json in runner
+
+      - name: Determine commit message and changed files
+        id: vars
+        run: |
+          COMMIT_MSG=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
+          FILES=$(jq -r '[ .commits[]? | (.added[]? , .modified[]? , .removed[]?) ] | unique | join(" ")' "$GITHUB_EVENT_PATH")
+          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Run auto push to Threads script
+        run: |
+          echo "Commit message:" "$COMMIT_MSG"
+          echo "Changed files:" "$FILES"
+          python3 auto_push-to-threads.py "${{ steps.vars.outputs.commit_message }}" ${{ steps.vars.outputs.changed_files }}
+        env:
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}

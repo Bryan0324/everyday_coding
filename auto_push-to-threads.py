@@ -1,9 +1,9 @@
 from threads.api import ThreadsAPI
 import sys
 import json
+import os
 
 import requests
-import json
 
 def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
     params = {
@@ -17,7 +17,7 @@ def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
             f"https://graph.threads.net/v1.0/{user_id}/threads",
             params=params,
         )
-    return
+    return resp.json()
 
 def split_text(text, limit=490):  # 留一點 buffer
     _ret = text.split('\n')
@@ -31,12 +31,16 @@ def split_text(text, limit=490):  # 留一點 buffer
             ret[-1] += '\n' + line
     return ret
 
-def refresh_token():
-    with open("secret.json", "r", encoding="utf-8") as file:
-        ori = json.loads(file.read())
-        access_token = ori["access_token"]
+def refresh_token(access_token=None, persist=False, ori=None):
+    """Refresh access token.
+
+    If `access_token` is provided, use it. If `persist` is True and an
+    `ori` dict is provided (from secret.json), write the refreshed token back.
+    In CI (when using Actions Secrets) `persist` should be False so we don't
+    attempt to write files.
+    """
     if not access_token:
-        raise ValueError("THREADS_ACCESS_TOKEN 環境變數未設定")
+        raise ValueError("THREADS_ACCESS_TOKEN 未設定（env 或 secret.json）")
 
     url = "https://graph.threads.net/refresh_access_token"
     params = {
@@ -58,25 +62,50 @@ def refresh_token():
     print(f"新的 Access Token: {new_token}")
     print(f"有效期: {expires_in // 86400} 天")
 
-    # 輸出到檔案（方便手動檢查/存放）
-    with open("secret.json", "w", encoding="utf-8") as f:
-        ori["access_token"] = new_token
-        json.dump(ori, f, indent=2, ensure_ascii=False)
+    if persist and ori is not None:
+        try:
+            ori["access_token"] = new_token
+            with open("secret.json", "w", encoding="utf-8") as f:
+                json.dump(ori, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print("Warning: 無法寫入 secret.json:", e)
 
     return new_token
+
+
+def load_secrets():
+    """Load secrets from environment (preferred) or fallback to secret.json."""
+    user_id = os.getenv("THREADS_USER_ID")
+    access_token = os.getenv("THREADS_ACCESS_TOKEN")
+    app_secret = os.getenv("THREADS_APP_SECRET")
+    if user_id and access_token and app_secret:
+        return {"user_id": user_id, "access_token": access_token, "app_secret": app_secret, "persist": False}
+
+    # fallback to file
+    with open("secret.json", "r", encoding="utf-8") as file:
+        ori = json.loads(file.read())
+    return {"user_id": ori.get("user_id"), "access_token": ori.get("access_token"), "app_secret": ori.get("app_secret"), "persist": True, "ori": ori}
 
 
 # 從 git hook 傳進來的參數
 commit_message = sys.argv[1]
 changed_files = sys.argv[2:]
-refresh_token()
-with open("secret.json", "r", encoding="utf-8") as file:
-    raw = json.loads(file.read())
-    threads = ThreadsAPI(
-        user_id = raw["user_id"],
-        access_token=raw["access_token"],
-        app_secret=raw["app_secret"]
-    )
+
+# 取得 secrets（優先使用 env）
+secrets = load_secrets()
+
+# 嘗試更新 token，但只有當 secrets 從 secret.json 讀入時才會被寫回檔案
+new_token = refresh_token(secrets.get("access_token"), persist=secrets.get("persist", False), ori=secrets.get("ori"))
+if new_token:
+    access_token = new_token
+else:
+    access_token = secrets.get("access_token")
+
+threads = ThreadsAPI(
+    user_id=secrets.get("user_id"),
+    access_token=access_token,
+    app_secret=secrets.get("app_secret"),
+)
 
 
     
@@ -96,12 +125,12 @@ container_ids = []
 # 先建立所有 container
 for i, part in enumerate(parts):
     if i == 0:
-        media_json = threads.create_media_container(text=part)
+        media_json = raw_container(part, access_token, secrets.get("user_id"))
+        container_ids.append(media_json.get("id"))
     else:
 
-        media_json = threads.create_media_container(text=part)
-        media_json.update({"text_post_app_info": {"reply_id": container_ids[-1]}})
-    container_ids.append(media_json.get("id"))
+        media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
+        container_ids.append(media_json.get("id"))
 
 # 發佈所有 container（會自動串成 thread）
 for cid in container_ids:

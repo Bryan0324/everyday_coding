@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -32,8 +34,18 @@ jobs:
           echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
           echo "=== event payload ==="
           jq . "$GITHUB_EVENT_PATH" || cat "$GITHUB_EVENT_PATH"
-          COMMIT_MSG=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
-          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+
+          # commit message fallback to git log
+          COMMIT_MSG=$(jq -r '.head_commit.message // empty' "$GITHUB_EVENT_PATH")
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG=$(git log -1 --pretty=%B || echo "")
+          fi
+
+          # get changed files from the current commit (one-per-line), convert to space-separated
+          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | tr '\n' ' ')
+          echo "DEBUG: git diff-tree output (one-per-line):"
+          git diff-tree --no-commit-id --name-only -r HEAD || true
+
           echo "FILES raw (space-separated):"
           printf '%s\n' "$FILES"
           echo "FILES as bash array (each shown on its own line):"

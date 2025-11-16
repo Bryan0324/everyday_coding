@@ -29,22 +29,33 @@ jobs:
       - name: Determine commit message and changed files
         id: vars
         run: |
+          echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
+          echo "=== event payload ==="
+          jq . "$GITHUB_EVENT_PATH" || cat "$GITHUB_EVENT_PATH"
           COMMIT_MSG=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
           FILES=$(jq -r '[ .commits[]? | (.added[]? , .modified[]? , .removed[]?) ] | unique | join(" ")' "$GITHUB_EVENT_PATH")
+          echo "FILES raw (space-separated):"
+          printf '%s\n' "$FILES"
+          echo "FILES as bash array (each shown on its own line):"
+          for f in $FILES; do echo " - [$f]"; done
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "git HEAD:"
+          git rev-parse --verify HEAD || true
+          echo "git status (porcelain):"
+          git status --porcelain || true
           echo "commit_message<<EOF" >> $GITHUB_OUTPUT
           echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
           echo "$FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Run auto push to Threads script
         run: |
-          echo "Commit message: $COMMIT_MSG"
-          echo "Changed files: $FILES"
-          # 不要用引號包 FILES，讓 shell 以空白分割成多個參數
-          python3 auto_push-to-threads.py "$COMMIT_MSG" $FILES
+          echo "Commit message:" "$COMMIT_MSG"
+          echo "Changed files:" "$FILES"
+          python3 auto_push-to-threads.py "${{ steps.vars.outputs.commit_message }}" ${{ steps.vars.outputs.changed_files }}
         env:
-          COMMIT_MSG: ${{ steps.vars.outputs.commit_message }}
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}

@@ -64,8 +64,8 @@ jobs:
 
       - name: Run auto push to Threads script
         run: |
-          echo "Commit message:" "$COMMIT_MSG"
-          echo "Changed files:" "$FILES"
+          echo "Commit message:" "${{ steps.vars.outputs.commit_message }}"
+          echo "Changed files:" "${{ steps.vars.outputs.changed_files }}"
           python3 auto_push-to-threads.py "${{ steps.vars.outputs.commit_message }}" ${{ steps.vars.outputs.changed_files }}
         env:
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}

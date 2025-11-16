@@ -82,6 +82,8 @@ def load_secrets():
 # 從 git hook 傳進來的參數
 commit_message = sys.argv[1]
 changed_files = sys.argv[2:]
+print("Commit message:", commit_message)
+print("Changed files:", changed_files)
 
 # 取得 secrets（優先使用 env）
 secrets = load_secrets()

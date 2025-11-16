@@ -126,13 +126,10 @@ container_ids = []
 for i, part in enumerate(parts):
     if i == 0:
         media_json = raw_container(part, access_token, secrets.get("user_id"))
-        container_ids.append(media_json.get("id"))
     else:
-
         media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
-        container_ids.append(media_json.get("id"))
-
-# 發佈所有 container（會自動串成 thread）
-for cid in container_ids:
-    resp = threads.publish_container(cid)
+    
+    container_ids.append(media_json.get("id"))
+    resp = threads.publish_container(container_ids[-1])
     print("Published:", resp)
+print("All done!")

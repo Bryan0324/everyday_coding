@@ -106,7 +106,6 @@ text = "TOI初選錄取前每日一題競程"
 text += commit_message + "\n"
 
 text += "\n\n" + "今日的程式碼：\n"
-
 for i in changed_files:
     text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
 

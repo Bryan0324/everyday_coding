@@ -59,16 +59,8 @@ def refresh_token(access_token=None, persist=False, ori=None):
     expires_in = data.get("expires_in", 0)
 
     print("更新成功")
-    print(f"新的 Access Token: {new_token}")
+    print(f"新的 Access Token: {new_token[:10]}...{new_token[-10:]}")
     print(f"有效期: {expires_in // 86400} 天")
-
-    if persist and ori is not None:
-        try:
-            ori["access_token"] = new_token
-            with open("secret.json", "w", encoding="utf-8") as f:
-                json.dump(ori, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            print("Warning: 無法寫入 secret.json:", e)
 
     return new_token
 
@@ -128,7 +120,7 @@ for i, part in enumerate(parts):
         media_json = raw_container(part, access_token, secrets.get("user_id"))
     else:
         media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
-    
+    print("Created container:", media_json)
     container_ids.append(media_json.get("id"))
     resp = threads.publish_container(container_ids[-1])
     print("Published:", resp)

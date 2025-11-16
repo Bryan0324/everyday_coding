@@ -40,10 +40,13 @@ jobs:
 
       - name: Run auto push to Threads script
         run: |
-          echo "Commit message:" "$COMMIT_MSG"
-          echo "Changed files:" "$FILES"
-          python3 auto_push-to-threads.py "${{ steps.vars.outputs.commit_message }}" ${{ steps.vars.outputs.changed_files }}
+          echo "Commit message: $COMMIT_MSG"
+          echo "Changed files: $CHANGED_FILES"
+          # 不要用引號包 CHANGED_FILES，讓 shell 以空白分割成多個參數
+          python3 auto_push-to-threads.py "$COMMIT_MSG" $CHANGED_FILES
         env:
+          COMMIT_MSG: ${{ steps.vars.outputs.commit_message }}
+          CHANGED_FILES: ${{ steps.vars.outputs.changed_files }}
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}

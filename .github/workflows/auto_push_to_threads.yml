@@ -33,7 +33,7 @@ jobs:
           echo "=== event payload ==="
           jq . "$GITHUB_EVENT_PATH" || cat "$GITHUB_EVENT_PATH"
           COMMIT_MSG=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
-          FILES=$(jq -r '[ .commits[]? | (.added[]? , .modified[]? , .removed[]?) ] | unique | join(" ")' "$GITHUB_EVENT_PATH")
+          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
           echo "FILES raw (space-separated):"
           printf '%s\n' "$FILES"
           echo "FILES as bash array (each shown on its own line):"

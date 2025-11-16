@@ -98,7 +98,6 @@ threads = ThreadsAPI(
     access_token=access_token,
     app_secret=secrets.get("app_secret"),
 )
-
     
 # 組合發文內容
 text = "TOI初選錄取前每日一題競程"

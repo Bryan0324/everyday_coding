@@ -110,7 +110,7 @@ for i in changed_files:
     text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
 parts = split_text(text)
 
-if commit_message == "test":
+if commit_message[:6] == "-debug":
     print("Test mode, not posting to Threads.")
     sys.exit(0)
 

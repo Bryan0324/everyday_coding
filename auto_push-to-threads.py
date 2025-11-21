@@ -12,7 +12,7 @@ def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
             "media_type": media_type,  # TEXT, IMAGE, VIDEO
         }
     if reply_id:
-        params["reply_to_id"] = reply_id
+        data["reply_to_id"] = reply_id
     resp = requests.post(
             f"https://graph.threads.net/v1.0/{user_id}/threads",
             data=data,

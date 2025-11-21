@@ -6,7 +6,7 @@ import os
 import requests
 
 def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
-    params = {
+    data = {
             "text": text,
             "access_token": token,
             "media_type": media_type,  # TEXT, IMAGE, VIDEO
@@ -15,7 +15,7 @@ def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
         params["reply_to_id"] = reply_id
     resp = requests.post(
             f"https://graph.threads.net/v1.0/{user_id}/threads",
-            params=params,
+            data=data,
         )
     return resp.json()
 

@@ -10,6 +10,7 @@ typedef pair<ull, pair<ull, ull>> Node;
 #define no second.second
 
 const ull MOD = 998244353;
+
 void solve()
 {
     ull NOTE = 0;

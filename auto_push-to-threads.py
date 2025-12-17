@@ -1,3 +1,4 @@
+from asyncio import sleep
 from threads.api import ThreadsAPI
 import sys
 import json
@@ -117,14 +118,14 @@ if commit_message[:6] == "-debug":
 container_ids = []
 
 # 先建立所有 container
-for i, part in enumerate(reversed(parts)):
+for i, part in enumerate(parts):
     if i == 0:
         media_json = raw_container(part, access_token, secrets.get("user_id"))
     else:
         media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)
     container_ids.append(media_json.get("id"))
-# 最後發佈最上層的 container
-resp = threads.publish_container(container_ids[-1])
-print("Published:", resp)
+    resp = threads.publish_container(container_ids[-1])
+    print("Published:", resp)
+    sleep(10)
 print("All done!")

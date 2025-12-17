@@ -6,7 +6,7 @@ import os
 
 import requests
 
-def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
+def raw_container(text, token, user_id, reply_id=None, media_type="TEXT") -> dict:
     data = {
             "text": text,
             "access_token": token,
@@ -134,7 +134,7 @@ for i, part in enumerate(parts):
             sleep(10)
             media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)
-    resp = threads.publish_container(container_ids[-1])
+    resp = threads.publish_container(media_json.get("id"))
     container_ids.append(resp.get("id"))
     print("Published:", resp)
 print("All done!")

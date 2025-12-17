@@ -122,10 +122,12 @@ for i, part in enumerate(parts):
     if i == 0:
         media_json = raw_container(part, access_token, secrets.get("user_id"))
     else:
-        media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
+        media_json = None
+        while media_json is None or "error" in media_json:
+            sleep(10)
+            media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)
     container_ids.append(media_json.get("id"))
     resp = threads.publish_container(container_ids[-1])
     print("Published:", resp)
-    sleep(10)
 print("All done!")

@@ -25,6 +25,7 @@ void solve()
     cout << ans << '\n';
 }
 
+
 int main()
 {
     cin.tie(0)->sync_with_stdio(false);

@@ -131,7 +131,7 @@ for i, part in enumerate(parts):
         while media_json is None or "error" in media_json:
             if media_json and "error" in media_json:
                 print("Error creating container, retrying in 10 seconds:", media_json)
-            sleep(10)
+                sleep(10)
             media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)
     resp = threads.publish_container(media_json.get("id"))

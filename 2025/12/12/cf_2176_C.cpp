@@ -3,6 +3,7 @@ using namespace std;
 using ull = unsigned long long;
 using ll = long long;
 
+
 void solve()
 {
     ull n, tmp;

@@ -134,7 +134,7 @@ for i, part in enumerate(parts):
             sleep(10)
             media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)
-    container_ids.append(media_json.get("id"))
     resp = threads.publish_container(container_ids[-1])
+    container_ids.append(resp.get("id"))
     print("Published:", resp)
 print("All done!")

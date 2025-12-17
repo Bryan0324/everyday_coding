@@ -4,7 +4,6 @@ using namespace std;
 using ull = unsigned long long;
 using ll = long long;
 
-
 typedef pair<ull, pair<ull, ull>> Node;
 #define val first
 #define to second.first

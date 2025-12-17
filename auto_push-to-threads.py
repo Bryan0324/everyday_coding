@@ -14,10 +14,15 @@ def raw_container(text, token, user_id, reply_id=None, media_type="TEXT"):
         }
     if reply_id:
         data["reply_to_id"] = reply_id
-    resp = requests.post(
-            f"https://graph.threads.net/v1.0/{user_id}/threads",
+        resp = requests.post(
+            "https://graph.threads.net/v1.0/me/threads",
             data=data,
         )
+    else:
+        resp = requests.post(
+                f"https://graph.threads.net/v1.0/{user_id}/threads",
+                data=data,
+            )
     return resp.json()
 
 def split_text(text, limit=490):  # 留一點 buffer
@@ -124,6 +129,8 @@ for i, part in enumerate(parts):
     else:
         media_json = None
         while media_json is None or "error" in media_json:
+            if media_json and "error" in media_json:
+                print("Error creating container, retrying in 10 seconds:", media_json)
             sleep(10)
             media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
     print("Created container:", media_json)

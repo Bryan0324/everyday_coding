@@ -117,7 +117,7 @@ if commit_message[:6] == "-debug":
 container_ids = []
 
 # 先建立所有 container
-for i, part in reversed(list(enumerate(parts))):
+for i, part in enumerate(reversed(parts)):
     if i == 0:
         media_json = raw_container(part, access_token, secrets.get("user_id"))
     else:

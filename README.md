@@ -95,6 +95,3 @@ auto_push-to-threads.py 使用說明
 - 檔名含空白：目前 workflow 以空白分隔檔名，若 repository 中可能有空白檔名，請改用 JSON 或把 changed files 放到 env 中整段傳遞並在腳本裡解析。
 - Rate limits / API 失敗：Threads / Meta API 可能有速率限制或權杖過期，腳本已包含 refresh_token 邏輯但仍需捕捉錯誤並重試或 log。
 
-若需要我：
-- 幫你把 README 補上更詳細的 debug 範例 log（貼出你執行的 step log）；
-- 或直接修改 workflow（例如把 changed_files 改成 JSON 傳遞或把 outputs 先寫入 env）以確保 Python 能正確接收檔案列表。

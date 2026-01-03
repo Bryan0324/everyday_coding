@@ -6,19 +6,19 @@ import os
 
 def split_text(text: str, limit=490) -> list[str]:
     # Split the text by newlines and the custom delimiter
-    lines = [line for part in text.split('\n') for line in part.split("!$\\n$!")]
-    print(f"Total lines to process: {lines}")
     ret = []
-    
-    for line in lines:
-        while len(line) > limit:
-            ret.append(line[:limit])
-            line = line[limit:]
-        if ret and len(ret[-1]) + len(line) + 1 <= limit:
-            ret[-1] += '\n' + line
-        else:
-            ret.append(line)
-    
+    for part in text.split('---SPLIT---'):
+        lines = [line for line in part.split('\n')]
+        _ret = []
+        for line in lines:
+            while len(line) > limit:
+                _ret.append(line[:limit])
+                line = line[limit:]
+            if _ret and len(_ret[-1]) + len(line) + 1 <= limit:
+                _ret[-1] += '\n' + line
+            else:
+                _ret.append(line)
+        ret.extend(_ret)
     return ret
 
 def load_secrets() -> dict[str, str | bool | dict | None]:

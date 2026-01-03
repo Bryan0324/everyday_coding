@@ -7,6 +7,7 @@ import os
 def split_text(text: str, limit=490) -> list[str]:
     # Split the text by newlines and the custom delimiter
     lines = [line for part in text.split('\n') for line in part.split("!$\\n$!")]
+    print(f"Total lines to process: {lines}")
     ret = []
     
     for line in lines:

@@ -46,7 +46,8 @@ threads = ThreadsClient(
     user_id=str(secrets["user_id"]),
     access_token=str(secrets["access_token"])
 )
-    
+
+# 準備發文內容
 if commit_message[:7] != "-not-cp":
     text = "TOI初選錄取前每日一題競程"
     text += commit_message + "\n"

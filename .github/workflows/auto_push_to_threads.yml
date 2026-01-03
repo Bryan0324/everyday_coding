@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -24,7 +24,9 @@ jobs:
           sudo apt-get install -y jq
           python -m pip install --upgrade pip
           pip uninstall httpx -y
-          pip install -i https://test.pypi.org/simple/ threads-py
+          pip install threads-py \
+          -i https://test.pypi.org/simple \
+          --extra-index-url https://pypi.org/simple
           pip install pandas
 
       # Use Actions Secrets directly; do not write secret.json in runner

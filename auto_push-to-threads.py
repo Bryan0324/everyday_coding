@@ -69,6 +69,7 @@ parent = threads.create_post(text=parts[0])
 parent = parent.publish()
 print("Published:", parent)
 time.sleep(2)  # 等兩秒，避免發文太快被擋
+
 for part in parts[1:]:
     parent = parent.reply(threads.create_post(
         text=part

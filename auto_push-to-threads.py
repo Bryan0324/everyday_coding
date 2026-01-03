@@ -41,7 +41,7 @@ changed_files = sys.argv[2:]
 # 取得 secrets（優先使用 env）
 secrets = load_secrets()
 
-
+# 初始化 ThreadsClient
 threads = ThreadsClient(
     user_id=str(secrets["user_id"]),
     access_token=str(secrets["access_token"])

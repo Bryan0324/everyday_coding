@@ -47,17 +47,20 @@ threads = ThreadsClient(
     access_token=str(secrets["access_token"])
 )
     
+if commit_message[:7] != "-not-cp":
+    text = "TOI初選錄取前每日一題競程"
+    text += commit_message + "\n"
 
-    
-# 組合發文內容
-text = "TOI初選錄取前每日一題競程"
-text += commit_message + "\n"
+    text += "\n\n" + "今日的程式碼：\n"
+    for i in changed_files:
+        text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
+    parts = split_text(text)
+else :
+    # feature 發文
+    parts = split_text(commit_message[6:])
 
-text += "\n\n" + "今日的程式碼：\n"
-for i in changed_files:
-    text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
-parts = split_text(text)
 
+# Debug 模式，不發文
 if commit_message[:6] == "-debug":
     print("Test mode, not posting to Threads.")
     sys.exit(0)

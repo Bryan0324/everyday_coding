@@ -1,87 +1,36 @@
-from asyncio import sleep
-from threads.api import ThreadsAPI
+import time
+from threads_py import ThreadsClient
 import sys
 import json
 import os
 
-import requests
-
-def raw_container(text, token, user_id, reply_id=None, media_type="TEXT") -> dict:
-    data = {
-            "text": text,
-            "access_token": token,
-            "media_type": media_type,  # TEXT, IMAGE, VIDEO
-        }
-    if reply_id:
-        data["reply_to_id"] = reply_id
-        resp = requests.post(
-            "https://graph.threads.net/v1.0/me/threads",
-            data=data,
-        )
-    else:
-        resp = requests.post(
-                f"https://graph.threads.net/v1.0/{user_id}/threads",
-                data=data,
-            )
-    return resp.json()
-
-def split_text(text, limit=490):  # 留一點 buffer
-    _ret = text.split('\n')
+def split_text(text: str, limit=490) -> list[str]:
+    # Split the text by newlines and the custom delimiter
+    lines = [line for part in text.split('\n') for line in part.split("!$\\n$!")]
     ret = []
-    for line in _ret:
-        if len(line) > limit:
-            ret.extend([line[i:i+limit] for i in range(0, len(line), limit)])
-        elif len(ret) == 0 or len(ret[-1]) + len(line) + 1 > limit:
-            ret.append(line)
-        else:
+    
+    for line in lines:
+        while len(line) > limit:
+            ret.append(line[:limit])
+            line = line[limit:]
+        if ret and len(ret[-1]) + len(line) + 1 <= limit:
             ret[-1] += '\n' + line
+        else:
+            ret.append(line)
+    
     return ret
 
-def refresh_token(access_token=None, persist=False, ori=None):
-    """Refresh access token.
-
-    If `access_token` is provided, use it. If `persist` is True and an
-    `ori` dict is provided (from secret.json), write the refreshed token back.
-    In CI (when using Actions Secrets) `persist` should be False so we don't
-    attempt to write files.
-    """
-    if not access_token:
-        raise ValueError("THREADS_ACCESS_TOKEN 未設定（env 或 secret.json）")
-
-    url = "https://graph.threads.net/refresh_access_token"
-    params = {
-        "grant_type": "th_refresh_token",
-        "access_token": access_token,
-    }
-
-    print("正在更新 Threads 長期存活 Token...")
-    resp = requests.get(url, params=params)
-    data = resp.json()
-
-    if "access_token" not in data:
-        raise RuntimeError(f"更新失敗: {data}")
-
-    new_token = data["access_token"]
-    expires_in = data.get("expires_in", 0)
-
-    print("更新成功")
-    print(f"新的 Access Token: {new_token[:10]}...{new_token[-10:]}")
-    print(f"有效期: {expires_in // 86400} 天")
-
-    return new_token
-
-
-def load_secrets():
+def load_secrets() -> dict[str, str | bool | dict | None]:
     """Load secrets from environment (preferred) or fallback to secret.json."""
-    user_id = os.getenv("THREADS_USER_ID")
-    access_token = os.getenv("THREADS_ACCESS_TOKEN")
-    app_secret = os.getenv("THREADS_APP_SECRET")
+    user_id= str(os.getenv("THREADS_USER_ID"))
+    access_token = str(os.getenv("THREADS_ACCESS_TOKEN"))
+    app_secret = str(os.getenv("THREADS_APP_SECRET"))
     if user_id and access_token and app_secret:
         return {"user_id": user_id, "access_token": access_token, "app_secret": app_secret, "persist": False}
 
     # fallback to file
     with open("secret.json", "r", encoding="utf-8") as file:
-        ori = json.loads(file.read())
+        ori : dict[str, str] = json.loads(file.read())
     return {"user_id": ori.get("user_id"), "access_token": ori.get("access_token"), "app_secret": ori.get("app_secret"), "persist": True, "ori": ori}
 
 
@@ -92,17 +41,10 @@ changed_files = sys.argv[2:]
 # 取得 secrets（優先使用 env）
 secrets = load_secrets()
 
-# 嘗試更新 token，但只有當 secrets 從 secret.json 讀入時才會被寫回檔案
-new_token = refresh_token(secrets.get("access_token"), persist=secrets.get("persist", False), ori=secrets.get("ori"))
-if new_token:
-    access_token = new_token
-else:
-    access_token = secrets.get("access_token")
 
-threads = ThreadsAPI(
-    user_id=secrets.get("user_id"),
-    access_token=access_token,
-    app_secret=secrets.get("app_secret"),
+threads = ThreadsClient(
+    user_id=str(secrets["user_id"]),
+    access_token=str(secrets["access_token"])
 )
     
 
@@ -120,21 +62,13 @@ if commit_message[:6] == "-debug":
     print("Test mode, not posting to Threads.")
     sys.exit(0)
 
-container_ids = []
-
-# 先建立所有 container
-for i, part in enumerate(parts):
-    if i == 0:
-        media_json = raw_container(part, access_token, secrets.get("user_id"))
-    else:
-        media_json = None
-        while media_json is None or "error" in media_json:
-            if media_json and "error" in media_json:
-                print("Error creating container, retrying in 10 seconds:", media_json)
-                sleep(10)
-            media_json = raw_container(part, access_token, secrets.get("user_id"), reply_id=container_ids[-1])
-    print("Created container:", media_json)
-    resp = threads.publish_container(media_json.get("id"))
-    container_ids.append(resp.get("id"))
-    print("Published:", resp)
+parent = threads.create_post(text=parts[0])
+parent = parent.publish()
+print("Published:", parent)
+time.sleep(2)  # 等兩秒，避免發文太快被擋
+for part in parts[1:]:
+    parent = parent.reply(threads.create_post(
+        text=part
+    ))
+    print("Published:", parent)
 print("All done!")

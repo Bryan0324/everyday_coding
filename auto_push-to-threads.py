@@ -52,7 +52,14 @@ threads = ThreadsClient(
 threads.refresh_access_token()
 
 # 準備發文內容
-if commit_message[:7] != "-not-cp":
+if commit_message[:7] != "-coding":
+    text = commit_message[7:]
+    text += "\n\n" + "今日的程式碼：\n"
+    for i in changed_files:
+        text += "https://github.com/Bryan0324/everyday_coding/blob/main/" + i + "\n"
+    parts = split_text(text)
+    
+elif commit_message[:7] != "-not-cp":
     text = "TOI初選錄取前每日一題競程"
     text += commit_message + "\n"
 
